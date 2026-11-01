@@ -333,6 +333,57 @@ function prefillFromEligibility() {
   }
 }
 
+// Auto-fill logged in citizen account details
+async function prefillUserData() {
+  try {
+    const res = await fetch('/api/auth/me');
+    if (!res.ok) return;
+    const data = await res.json();
+    const user = data.user;
+    if (!user) return;
+
+    const form = document.getElementById('applicationForm');
+    if (!form) return;
+
+    if (user.name) {
+      const nameInp = form.querySelector('[name="fullName"]');
+      if (nameInp && !nameInp.value) nameInp.value = user.name;
+    }
+    if (user.email) {
+      const emailInp = form.querySelector('[name="email"]');
+      if (emailInp) {
+        emailInp.value = user.email;
+        emailInp.readOnly = true;
+        emailInp.classList.add('bg-light');
+      }
+    }
+    if (user.phone) {
+      const phoneInp = form.querySelector('[name="phone"]');
+      if (phoneInp && !phoneInp.value) phoneInp.value = user.phone;
+    }
+    if (user.aadhaar) {
+      const aadhaarInp = form.querySelector('[name="aadhaar"]');
+      if (aadhaarInp && !aadhaarInp.value) aadhaarInp.value = user.aadhaar;
+    }
+    if (user.gender) {
+      const genderInp = form.querySelector('[name="gender"]');
+      if (genderInp && !genderInp.value) genderInp.value = user.gender;
+    }
+    if (user.category) {
+      const catInp = form.querySelector('[name="category"]');
+      if (catInp && !catInp.value) catInp.value = user.category;
+    }
+    if (user.address) {
+      ['street','city','district','state','pincode'].forEach(field => {
+        const inp = form.querySelector(`[name="${field}"]`);
+        if (inp && !inp.value && user.address[field]) inp.value = user.address[field];
+      });
+    }
+  } catch (e) {
+    console.error('Failed to prefill user data:', e);
+  }
+}
+
 // Eligibility Enforcement Guard
 function checkEligibilityRequirement() {
   const isVerified = sessionStorage.getItem('housing_eligibility_verified');
@@ -361,6 +412,7 @@ function checkEligibilityRequirement() {
     await fetchAllSchemes();
     await loadSchemeCards();
     prefillFromEligibility();
+    await prefillUserData();
     showFormStep(1);
   }
 })();

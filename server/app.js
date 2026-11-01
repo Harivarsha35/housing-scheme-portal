@@ -32,8 +32,16 @@ const sessionConfig = {
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 };
-if (mongoose.connection.readyState === 1) {
-  sessionConfig.store = MongoStore.create({ mongoUrl: process.env.MONGO_URI });
+if (process.env.MONGO_URI && process.env.MONGO_URI.startsWith('mongodb')) {
+  try {
+    sessionConfig.store = MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: 'sessions',
+      ttl: 24 * 60 * 60
+    });
+  } catch (err) {
+    console.warn('⚠️  Could not attach MongoStore session store, using MemoryStore fallback:', err.message);
+  }
 }
 app.use(session(sessionConfig));
 

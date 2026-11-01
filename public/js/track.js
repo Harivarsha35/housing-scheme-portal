@@ -38,18 +38,6 @@ function renderResult(app) {
   document.getElementById('res_status_badge').className = 'status-pill pill-' + app.status;
   document.getElementById('res_status_badge').textContent = formatStatus(app.status);
 
-  // Auto track if ?id= query param is provided
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const qId = params.get('id');
-  if (qId) {
-    const input = document.getElementById('trackInput');
-    if (input) {
-      input.value = qId.trim().toUpperCase();
-      trackApp();
-    }
-  }
-});
   const stages = [
     { key: 'submitted',    label: 'Application Submitted',     icon: 'fas fa-file-alt',     desc: 'Your application has been received.' },
     { key: 'under_review', label: 'Document Verification',     icon: 'fas fa-search',        desc: 'Officials are verifying your documents.' },
@@ -203,3 +191,16 @@ window.addEventListener('DOMContentLoaded', () => {
 function formatStatus(s) {
   return { submitted: 'Submitted', under_review: 'Under Review', approved: 'Approved', rejected: 'Rejected', disbursed: 'Disbursed' }[s] || s;
 }
+
+// Auto track if ?id= query param is provided
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const qId = params.get('id');
+  if (qId) {
+    const input = document.getElementById('trackInput');
+    if (input) {
+      input.value = qId.trim().toUpperCase();
+      trackApp();
+    }
+  }
+});

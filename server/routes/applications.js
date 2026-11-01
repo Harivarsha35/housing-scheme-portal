@@ -5,6 +5,8 @@ const fs = require('fs');
 
 let Application;
 try { Application = require('../models/Application'); } catch(e) { Application = null; }
+let User;
+try { User = require('../models/User'); } catch(e) { User = null; }
 
 // In-memory application store (starts empty; populated only by real registrations & submissions)
 const demoApps = [];
@@ -39,6 +41,11 @@ router.post('/', async (req, res) => {
   try {
     const body = req.body;
     const docs = [];
+    const applicantEmail = (body.email || req.session?.user?.email || '').trim().toLowerCase();
+    const applicantPhone = (body.phone || '').trim();
+
+    // Determine userId from session or matching user account
+    let userId = req.session?.user?.id || req.session?.user?._id || null;
 
     // Handle uploaded files
     if (req.files) {
@@ -52,12 +59,24 @@ router.post('/', async (req, res) => {
     }
 
     if (isMongo()) {
+      if (!userId && User) {
+        try {
+          const found = await User.findOne({
+            $or: [
+              { email: applicantEmail },
+              ...(applicantPhone ? [{ phone: applicantPhone }] : [])
+            ]
+          });
+          if (found) userId = found._id;
+        } catch (e) {}
+      }
+
       const app = await Application.create({
-        userId: req.session.user?.id || null,
-        applicantName: body.fullName,
-        email: body.email,
-        phone: body.phone,
-        aadhaar: body.aadhaar,
+        userId,
+        applicantName: (body.fullName || '').trim(),
+        email: applicantEmail,
+        phone: applicantPhone,
+        aadhaar: (body.aadhaar || '').trim(),
         dob: body.dob,
         gender: body.gender,
         category: body.category,
@@ -79,14 +98,26 @@ router.post('/', async (req, res) => {
     // Demo mode
     const id = `HSP2025${String(demoApps.length + 1).padStart(6, '0')}`;
     const newApp = {
-      _id: 'a' + Date.now(), applicationId: id,
-      applicantName: body.fullName, email: body.email, phone: body.phone, aadhaar: body.aadhaar,
-      dob: body.dob, gender: body.gender, category: body.category,
+      _id: 'a' + Date.now(),
+      applicationId: id,
+      userId,
+      applicantName: (body.fullName || '').trim(),
+      email: applicantEmail,
+      phone: applicantPhone,
+      aadhaar: (body.aadhaar || '').trim(),
+      dob: body.dob,
+      gender: body.gender,
+      category: body.category,
       address: { street: body.street, city: body.city, district: body.district, state: body.state, pincode: body.pincode },
-      schemeId: body.schemeId, schemeName: body.schemeName,
-      annualIncome: Number(body.annualIncome), employmentType: body.employmentType,
-      bankAccount: body.bankAccount, ifscCode: body.ifscCode,
-      documents: docs, status: 'submitted', submittedAt: new Date(),
+      schemeId: body.schemeId,
+      schemeName: body.schemeName,
+      annualIncome: Number(body.annualIncome),
+      employmentType: body.employmentType,
+      bankAccount: body.bankAccount,
+      ifscCode: body.ifscCode,
+      documents: docs,
+      status: 'submitted',
+      submittedAt: new Date(),
       statusHistory: [{ status: 'submitted', changedAt: new Date() }]
     };
     demoApps.push(newApp);
@@ -105,14 +136,62 @@ router.get('/my-applications', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Please log in to view your applications.' });
     }
 
+    const userEmail = (user.email || '').trim().toLowerCase();
+    const userPhone = (user.phone || '').trim();
+
     if (isMongo()) {
-      const orQuery = [{ email: user.email }];
+      // Auto-link any matching unlinked applications to this user account
+      if (user.id) {
+        await Application.updateMany(
+          {
+            $or: [
+              { email: new RegExp('^' + userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') },
+              ...(userPhone ? [{ phone: userPhone }] : [])
+            ],
+            $or: [{ userId: null }, { userId: { $exists: false } }]
+          },
+          { $set: { userId: user.id } }
+        ).catch(() => {});
+      }
+
+      const orQuery = [
+        { email: new RegExp('^' + userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') }
+      ];
       if (user.id) orQuery.push({ userId: user.id });
+      if (userPhone) orQuery.push({ phone: userPhone });
+
       const apps = await Application.find({ $or: orQuery }).sort({ submittedAt: -1 });
+
+      // Ensure approved applications have construction stages initialized
+      for (const app of apps) {
+        if ((app.status === 'approved' || app.status === 'disbursed') && (!app.constructionStages || app.constructionStages.length < 4)) {
+          app.constructionStages = getOrCreateStages(app);
+          await app.save();
+        }
+      }
+
       return res.json({ success: true, applications: apps });
     }
 
-    const apps = demoApps.filter(a => a.email === user.email || (user.id && a.userId === user.id));
+    // Demo mode: link apps and search case-insensitively
+    demoApps.forEach(a => {
+      const aEmail = (a.email || '').trim().toLowerCase();
+      if (!a.userId && (aEmail === userEmail || (userPhone && a.phone === userPhone))) {
+        a.userId = user.id;
+      }
+    });
+
+    const apps = demoApps.filter(a => {
+      const aEmail = (a.email || '').trim().toLowerCase();
+      return aEmail === userEmail || (user.id && (a.userId === user.id || a.userId === user._id)) || (userPhone && a.phone === userPhone);
+    });
+
+    apps.forEach(app => {
+      if ((app.status === 'approved' || app.status === 'disbursed') && (!app.constructionStages || app.constructionStages.length < 4)) {
+        app.constructionStages = getOrCreateStages(app);
+      }
+    });
+
     res.json({ success: true, applications: apps });
   } catch (err) {
     console.error(err);
@@ -123,14 +202,21 @@ router.get('/my-applications', async (req, res) => {
 // GET /api/applications/track/:id
 router.get('/track/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const cleanId = (req.params.id || '').trim().toUpperCase();
     if (isMongo()) {
-      const app = await Application.findOne({ applicationId: id.toUpperCase() });
+      let app = await Application.findOne({ applicationId: cleanId });
       if (!app) return res.status(404).json({ success: false, message: 'Application not found.' });
+      if ((app.status === 'approved' || app.status === 'disbursed') && (!app.constructionStages || app.constructionStages.length < 4)) {
+        app.constructionStages = getOrCreateStages(app);
+        await app.save();
+      }
       return res.json({ success: true, application: app });
     }
-    const app = demoApps.find(a => a.applicationId === id.toUpperCase());
+    const app = demoApps.find(a => a.applicationId === cleanId);
     if (!app) return res.status(404).json({ success: false, message: 'Application not found. Try: HSP2025000001' });
+    if ((app.status === 'approved' || app.status === 'disbursed') && (!app.constructionStages || app.constructionStages.length < 4)) {
+      app.constructionStages = getOrCreateStages(app);
+    }
     res.json({ success: true, application: app });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
@@ -140,17 +226,40 @@ router.patch('/:id/status', async (req, res) => {
   try {
     const { status, remarks } = req.body;
     if (isMongo()) {
-      const app = await Application.findByIdAndUpdate(req.params.id,
-        { status, adminRemarks: remarks, $push: { statusHistory: { status, remarks, changedBy: 'admin' } } },
-        { new: true }
-      );
+      let app = await Application.findById(req.params.id);
       if (!app) return res.status(404).json({ success: false, message: 'Not found.' });
+
+      app.status = status;
+      if (remarks) app.adminRemarks = remarks;
+      if (status === 'approved') {
+        app.approvedAt = new Date();
+        if (!app.constructionStages || app.constructionStages.length < 4) {
+          app.constructionStages = getOrCreateStages(app);
+        }
+      } else if (status === 'disbursed') {
+        app.disbursedAt = new Date();
+      } else if (status === 'under_review') {
+        app.reviewedAt = new Date();
+      }
+      app.statusHistory.push({ status, remarks, changedBy: 'admin', changedAt: new Date() });
+      await app.save();
       return res.json({ success: true, application: app });
     }
-    const app = demoApps.find(a => a._id === req.params.id);
+
+    const app = demoApps.find(a => a._id === req.params.id || a.applicationId === req.params.id);
     if (!app) return res.status(404).json({ success: false, message: 'Not found.' });
     app.status = status;
-    app.adminRemarks = remarks;
+    if (remarks) app.adminRemarks = remarks;
+    if (status === 'approved') {
+      app.approvedAt = new Date();
+      if (!app.constructionStages || app.constructionStages.length < 4) {
+        app.constructionStages = getOrCreateStages(app);
+      }
+    } else if (status === 'disbursed') {
+      app.disbursedAt = new Date();
+    } else if (status === 'under_review') {
+      app.reviewedAt = new Date();
+    }
     app.statusHistory.push({ status, remarks, changedAt: new Date() });
     res.json({ success: true, application: app });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }

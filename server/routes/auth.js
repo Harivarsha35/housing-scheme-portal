@@ -17,36 +17,63 @@ const demoUsers = [
   }
 ];
 
+let Application;
+try { Application = require('../models/Application'); } catch(e) { Application = null; }
+
+// Helper to auto-link orphaned applications submitted by this email
+async function linkApplicationsToUser(userId, email) {
+  if (!userId || !email) return;
+  const normalized = email.trim().toLowerCase();
+  try {
+    if (Application && require('mongoose').connection.readyState === 1) {
+      await Application.updateMany(
+        { email: new RegExp('^' + normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i'), $or: [{ userId: null }, { userId: { $exists: false } }] },
+        { $set: { userId } }
+      );
+    }
+  } catch (e) {}
+}
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
     const { name, email, phone, aadhaar, password, dob, gender, category, annualIncome, state, district, city, pincode, street } = req.body;
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const cleanPhone = (phone || '').trim();
 
     if (User && require('mongoose').connection.readyState === 1) {
-      const existsQuery = [{ email }];
-      if (aadhaar) existsQuery.push({ aadhaar });
+      const existsQuery = [
+        { email: normalizedEmail },
+        { email: new RegExp('^' + normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') }
+      ];
+      if (aadhaar) existsQuery.push({ aadhaar: aadhaar.trim() });
+      if (cleanPhone) existsQuery.push({ phone: cleanPhone });
+
       const exists = await User.findOne({ $or: existsQuery });
-      if (exists) return res.status(400).json({ success: false, message: 'Email or phone already registered.' });
+      if (exists) return res.status(400).json({ success: false, message: 'Email, phone, or Aadhaar already registered.' });
 
       const user = await User.create({
-        name, email, phone: phone || '',
-        ...(aadhaar ? { aadhaar } : {}),
+        name: (name || '').trim(),
+        email: normalizedEmail,
+        phone: cleanPhone,
+        ...(aadhaar ? { aadhaar: aadhaar.trim() } : {}),
         password, dob, gender, category,
         ...(annualIncome ? { annualIncome: Number(annualIncome) } : {}),
         address: { street, city, district, state, pincode }
       });
-      req.session.user = { id: user._id, name: user.name, email: user.email, role: user.role };
+      req.session.user = { id: user._id, name: user.name, email: user.email, phone: user.phone, aadhaar: user.aadhaar, role: user.role };
+      await linkApplicationsToUser(user._id, user.email);
       return res.json({ success: true, message: 'Registration successful!', user: req.session.user });
     }
 
     // Demo mode
-    if (demoUsers.find(u => u.email === email)) {
+    if (demoUsers.find(u => (u.email || '').toLowerCase() === normalizedEmail)) {
       return res.status(400).json({ success: false, message: 'Email already registered.' });
     }
     const hashed = await bcrypt.hash(password, 10);
-    const newUser = { _id: 'u' + Date.now(), name, email, phone, aadhaar: aadhaar || null, password: hashed, role: 'user', isVerified: true };
+    const newUser = { _id: 'u' + Date.now(), name: (name || '').trim(), email: normalizedEmail, phone: cleanPhone, aadhaar: aadhaar || null, password: hashed, role: 'user', isVerified: true };
     demoUsers.push(newUser);
-    req.session.user = { id: newUser._id, name: newUser.name, email: newUser.email, role: 'user' };
+    req.session.user = { id: newUser._id, name: newUser.name, email: newUser.email, phone: newUser.phone, aadhaar: newUser.aadhaar, role: 'user' };
     res.json({ success: true, message: 'Registration successful! (Demo Mode)', user: req.session.user });
   } catch (err) {
     console.error(err);
@@ -58,22 +85,29 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = (email || '').trim().toLowerCase();
 
     if (User && require('mongoose').connection.readyState === 1) {
-      const user = await User.findOne({ email });
+      const user = await User.findOne({
+        $or: [
+          { email: normalizedEmail },
+          { email: new RegExp('^' + normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') }
+        ]
+      });
       if (!user) return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       const match = await user.comparePassword(password);
       if (!match) return res.status(401).json({ success: false, message: 'Invalid email or password.' });
-      req.session.user = { id: user._id, name: user.name, email: user.email, role: user.role };
+      req.session.user = { id: user._id, name: user.name, email: user.email, phone: user.phone, aadhaar: user.aadhaar, role: user.role };
+      await linkApplicationsToUser(user._id, user.email);
       return res.json({ success: true, message: 'Login successful!', user: req.session.user });
     }
 
     // Demo mode
-    const found = demoUsers.find(u => u.email === email);
+    const found = demoUsers.find(u => (u.email || '').toLowerCase() === normalizedEmail);
     if (!found) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     const match = await bcrypt.compare(password, found.password);
     if (!match) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
-    req.session.user = { id: found._id, name: found.name, email: found.email, role: found.role };
+    req.session.user = { id: found._id, name: found.name, email: found.email, phone: found.phone, aadhaar: found.aadhaar, role: found.role };
     res.json({ success: true, message: 'Login successful! (Demo Mode)', user: req.session.user });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

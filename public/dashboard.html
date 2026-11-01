@@ -31,6 +31,7 @@
         <li class="nav-item"><a class="nav-link" href="/eligibility">Check Eligibility</a></li>
         <li class="nav-item"><a class="nav-link" href="/schemes">Schemes</a></li>
         <li class="nav-item"><a class="nav-link" href="/apply">Apply Now</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/dashboard">My Applications</a></li>
         <li class="nav-item"><a class="nav-link" href="/track">Track Application</a></li>
       </ul>
       <div class="d-flex align-items-center gap-2">
@@ -397,6 +398,12 @@
                     <span>${app.address?.city || '—'}, ${app.address?.state || '—'}</span>
                   </div>
                 </div>
+
+                ${app.adminRemarks ? `
+                  <div class="mt-3 p-2.5 rounded-3 bg-light border small text-dark">
+                    <i class="fas fa-comment-check text-primary me-1.5"></i><strong>Verification Officer Note:</strong> ${app.adminRemarks}
+                  </div>
+                ` : ''}
 
                 ${(app.status === 'approved' || app.status === 'disbursed') ? `
                   <!-- Phased Construction & Subsidy Installment Tracker -->
