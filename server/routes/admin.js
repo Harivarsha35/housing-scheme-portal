@@ -135,8 +135,8 @@ router.get('/stats', async (req, res) => {
       ]);
       return res.json({ success: true, stats: { total, approved, under_review, rejected, disbursed, submitted } });
     }
-    // Demo stats
-    res.json({ success: true, stats: { total: 342580, approved: 298400, under_review: 31200, rejected: 8980, disbursed: 240000, submitted: 5000 } });
+    // Non-mongo fallback stats – real counts
+    res.json({ success: true, stats: { total: 0, approved: 0, under_review: 0, rejected: 0, disbursed: 0, submitted: 0 } });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 

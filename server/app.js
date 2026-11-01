@@ -70,11 +70,13 @@ app.listen(PORT, () => {
   console.log(`📋 Admin panel:      http://localhost:${PORT}/admin`);
   console.log(`───────────────────────────────────────────────`);
 
-  // Automatically open browser
-  try {
-    const startCmd = process.platform === 'win32' ? `start http://localhost:${PORT}` :
-                     process.platform === 'darwin' ? `open http://localhost:${PORT}` :
-                     `xdg-open http://localhost:${PORT}`;
-    require('child_process').exec(startCmd);
-  } catch (err) {}
+  // Automatically open browser in local development
+  if (process.env.NODE_ENV !== 'production' && !process.env.RENDER && !process.env.RAILWAY_ENVIRONMENT) {
+    try {
+      const startCmd = process.platform === 'win32' ? `start http://localhost:${PORT}` :
+                       process.platform === 'darwin' ? `open http://localhost:${PORT}` :
+                       `xdg-open http://localhost:${PORT}`;
+      require('child_process').exec(startCmd);
+    } catch (err) {}
+  }
 });

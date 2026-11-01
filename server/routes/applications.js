@@ -6,58 +6,8 @@ const fs = require('fs');
 let Application;
 try { Application = require('../models/Application'); } catch(e) { Application = null; }
 
-// In-memory demo store
-const demoApps = [
-  {
-    _id: 'a1', applicationId: 'HSP2025000001', applicantName: 'Ramesh Kumar',
-    email: 'ramesh@example.com', phone: '9876543210', aadhaar: '234567890123',
-    schemeName: 'PM Housing Scheme – Urban', schemeId: 'pmay-urban', annualIncome: 180000,
-    address: { city: 'Delhi', state: 'Delhi', district: 'New Delhi', pincode: '110001' },
-    status: 'approved', submittedAt: new Date('2025-01-10'),
-    statusHistory: [{ status: 'submitted', changedAt: new Date('2025-01-10') },
-                    { status: 'under_review', changedAt: new Date('2025-01-15') },
-                    { status: 'approved', changedAt: new Date('2025-01-28') }],
-    documents: [], gender: 'male', category: 'general'
-  },
-  {
-    _id: 'a2', applicationId: 'HSP2025000002', applicantName: 'Sunita Devi',
-    email: 'sunita@example.com', phone: '9988776655', aadhaar: '345678901234',
-    schemeName: 'PM Housing Scheme – Rural', schemeId: 'pmay-gramin', annualIncome: 95000,
-    address: { city: 'Patna', state: 'Bihar', district: 'Patna', pincode: '800001' },
-    status: 'under_review', submittedAt: new Date('2025-02-05'),
-    statusHistory: [{ status: 'submitted', changedAt: new Date('2025-02-05') },
-                    { status: 'under_review', changedAt: new Date('2025-02-10') }],
-    documents: [], gender: 'female', category: 'obc'
-  },
-  {
-    _id: 'a3', applicationId: 'HSP2025000003', applicantName: 'Arjun Patel',
-    email: 'arjun@example.com', phone: '9123456780', aadhaar: '456789012345',
-    schemeName: 'SC / ST Special Housing Grant', schemeId: 'sc-st', annualIncome: 120000,
-    address: { city: 'Ahmedabad', state: 'Gujarat', district: 'Ahmedabad', pincode: '380001' },
-    status: 'submitted', submittedAt: new Date('2025-02-18'),
-    statusHistory: [{ status: 'submitted', changedAt: new Date('2025-02-18') }],
-    documents: [], gender: 'male', category: 'sc'
-  },
-  {
-    _id: 'a4', applicationId: 'HSP2025000004', applicantName: 'Meena Sharma',
-    email: 'meena@example.com', phone: '9012345678', aadhaar: '567890123456',
-    schemeName: 'PM Housing Scheme – Urban', schemeId: 'pmay-urban', annualIncome: 300000,
-    address: { city: 'Jaipur', state: 'Rajasthan', district: 'Jaipur', pincode: '302001' },
-    status: 'rejected', adminRemarks: 'Income exceeds EWS/LIG limit.', submittedAt: new Date('2025-01-22'),
-    statusHistory: [{ status: 'submitted', changedAt: new Date('2025-01-22') },
-                    { status: 'rejected', changedAt: new Date('2025-01-30'), remarks: 'Income exceeds limit' }],
-    documents: [], gender: 'female', category: 'general'
-  },
-  {
-    _id: 'a5', applicationId: 'HSP2025000005', applicantName: 'Kumar Babu',
-    email: 'kumar@example.com', phone: '9876501234', aadhaar: '678901234567',
-    schemeName: 'PM Housing Scheme – Rural', schemeId: 'pmay-gramin', annualIncome: 80000,
-    address: { city: 'Muzaffarpur', state: 'Bihar', district: 'Muzaffarpur', pincode: '842001' },
-    status: 'disbursed', submittedAt: new Date('2024-11-10'),
-    statusHistory: [{ status: 'submitted' }, { status: 'approved' }, { status: 'disbursed' }],
-    documents: [], gender: 'male', category: 'obc'
-  }
-];
+// In-memory application store (starts empty; populated only by real registrations & submissions)
+const demoApps = [];
 
 const isMongo = () => Application && require('mongoose').connection.readyState === 1;
 
