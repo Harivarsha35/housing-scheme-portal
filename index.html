@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Housing Scheme Portal</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <i class="fas fa-home"></i>
+      <span>Housing Scheme Portal</span>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="schemes.html">Schemes</a></li>
+      <li><a href="eligibility.html">Check Eligibility</a></li>
+      <li><a href="apply.html">Apply Now</a></li>
+      <li><a href="track.html">Track Application</a></li>
+      <li><a href="login.html" class="btn-nav">Login / Register</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <i class="fas fa-bars"></i>
+    </button>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-badge">Government of India — Ministry of Housing</span>
+      <h1>Digital Housing Scheme<br /><span class="highlight">Application Portal</span></h1>
+      <p>Apply for government housing schemes, check eligibility, upload documents, and track your application — all in one place.</p>
+      <div class="hero-buttons">
+        <a href="apply.html" class="btn btn-primary"><i class="fas fa-file-alt"></i> Apply Now</a>
+        <a href="track.html" class="btn btn-outline"><i class="fas fa-search"></i> Track Application</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">2.4M+</span>
+          <span class="stat-label">Beneficiaries</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">18</span>
+          <span class="stat-label">Active Schemes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">92%</span>
+          <span class="stat-label">Approval Rate</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">₹4.2L Cr</span>
+          <span class="stat-label">Disbursed</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="building-visual">
+        <div class="building b1"></div>
+        <div class="building b2"></div>
+        <div class="building b3"></div>
+        <div class="building b4"></div>
+        <div class="ground"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Simple Process</span>
+        <h2>How It Works</h2>
+        <p>Complete your housing scheme application in 4 easy steps</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">01</div>
+          <div class="step-icon"><i class="fas fa-user-plus"></i></div>
+          <h3>Register & Login</h3>
+          <p>Create your account with Aadhaar-linked verification for secure access to the portal.</p>
+        </div>
+        <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+        <div class="step-card">
+          <div class="step-number">02</div>
+          <div class="step-icon"><i class="fas fa-clipboard-check"></i></div>
+          <h3>Check Eligibility</h3>
+          <p>Answer a few questions to instantly check your eligibility for various housing schemes.</p>
+        </div>
+        <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+        <div class="step-card">
+          <div class="step-number">03</div>
+          <div class="step-icon"><i class="fas fa-upload"></i></div>
+          <h3>Submit Application</h3>
+          <p>Fill the application form and upload required documents — Aadhaar, income proof, etc.</p>
+        </div>
+        <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+        <div class="step-card">
+          <div class="step-number">04</div>
+          <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+          <h3>Track & Receive</h3>
+          <p>Monitor your application status in real-time and receive housing benefits upon approval.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Active Schemes -->
+  <section class="section schemes-preview bg-light">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Available Now</span>
+        <h2>Active Housing Schemes</h2>
+        <p>Choose from a wide range of government housing assistance programs</p>
+      </div>
+      <div class="schemes-grid">
+        <div class="scheme-card">
+          <div class="scheme-icon pmay"><i class="fas fa-city"></i></div>
+          <h3>PMAY - Urban</h3>
+          <p>Pradhan Mantri Awas Yojana for urban areas. Subsidized housing for EWS/LIG/MIG families.</p>
+          <ul class="scheme-tags">
+            <li>EWS / LIG / MIG</li>
+            <li>₹2.67L Subsidy</li>
+            <li>Urban Areas</li>
+          </ul>
+          <a href="schemes.html#pmay-urban" class="btn btn-sm">Learn More</a>
+        </div>
+        <div class="scheme-card featured">
+          <div class="scheme-badge-tag">Most Popular</div>
+          <div class="scheme-icon pmay-g"><i class="fas fa-home"></i></div>
+          <h3>PMAY - Gramin</h3>
+          <p>Housing assistance for rural BPL families to construct a pucca house with basic amenities.</p>
+          <ul class="scheme-tags">
+            <li>Rural BPL</li>
+            <li>₹1.20L - ₹1.30L</li>
+            <li>Rural Areas</li>
+          </ul>
+          <a href="schemes.html#pmay-gramin" class="btn btn-sm btn-primary">Learn More</a>
+        </div>
+        <div class="scheme-card">
+          <div class="scheme-icon sct"><i class="fas fa-shield-alt"></i></div>
+          <h3>SC/ST Housing Scheme</h3>
+          <p>Special housing assistance for Scheduled Castes and Scheduled Tribes across all states.</p>
+          <ul class="scheme-tags">
+            <li>SC / ST Category</li>
+            <li>₹1.5L Grant</li>
+            <li>All Areas</li>
+          </ul>
+          <a href="schemes.html#sc-st" class="btn btn-sm">Learn More</a>
+        </div>
+        <div class="scheme-card">
+          <div class="scheme-icon senior"><i class="fas fa-user-friends"></i></div>
+          <h3>Senior Citizen Housing</h3>
+          <p>Dedicated housing facilities with care services for citizens aged 60 and above.</p>
+          <ul class="scheme-tags">
+            <li>Age 60+</li>
+            <li>Subsidized Rent</li>
+            <li>Urban & Semi-Urban</li>
+          </ul>
+          <a href="schemes.html#senior" class="btn btn-sm">Learn More</a>
+        </div>
+      </div>
+      <div class="text-center mt-4">
+        <a href="schemes.html" class="btn btn-outline">View All Schemes <i class="fas fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Eligibility Check CTA -->
+  <section class="section eligibility-cta">
+    <div class="container">
+      <div class="cta-card">
+        <div class="cta-content">
+          <h2>Check Your Eligibility Instantly</h2>
+          <p>Answer 5 simple questions and find out which housing schemes you qualify for — takes less than 2 minutes.</p>
+          <a href="eligibility.html" class="btn btn-primary btn-lg"><i class="fas fa-magic"></i> Check Eligibility Now</a>
+        </div>
+        <div class="cta-features">
+          <div class="cta-feature">
+            <i class="fas fa-bolt"></i>
+            <span>Instant Results</span>
+          </div>
+          <div class="cta-feature">
+            <i class="fas fa-lock"></i>
+            <span>100% Secure</span>
+          </div>
+          <div class="cta-feature">
+            <i class="fas fa-file-alt"></i>
+            <span>No Documents Needed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Preview -->
+  <section class="section dashboard-preview bg-light">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Real-Time Insights</span>
+        <h2>Portal Statistics</h2>
+        <p>Live data on housing scheme applications and beneficiary outcomes</p>
+      </div>
+      <div class="stats-dashboard">
+        <div class="dash-stat">
+          <i class="fas fa-file-alt"></i>
+          <div>
+            <span class="dash-num" data-target="342580">0</span>
+            <span class="dash-label">Total Applications</span>
+          </div>
+        </div>
+        <div class="dash-stat">
+          <i class="fas fa-check-double"></i>
+          <div>
+            <span class="dash-num" data-target="298400">0</span>
+            <span class="dash-label">Approved</span>
+          </div>
+        </div>
+        <div class="dash-stat">
+          <i class="fas fa-clock"></i>
+          <div>
+            <span class="dash-num" data-target="31200">0</span>
+            <span class="dash-label">Under Review</span>
+          </div>
+        </div>
+        <div class="dash-stat">
+          <i class="fas fa-users"></i>
+          <div>
+            <span class="dash-num" data-target="2400000">0</span>
+            <span class="dash-label">Beneficiaries</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section testimonials">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Success Stories</span>
+        <h2>What Beneficiaries Say</h2>
+      </div>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+          <p>"The online portal made it incredibly easy to apply for the PMAY scheme. I got my application approved within 3 weeks!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">R</div>
+            <div>
+              <strong>Ramesh Kumar</strong>
+              <span>PMAY-Urban Beneficiary, Delhi</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+          <p>"I tracked my application daily from my phone. The real-time status updates kept me informed throughout the process."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">S</div>
+            <div>
+              <strong>Sunita Devi</strong>
+              <span>PMAY-Gramin Beneficiary, Bihar</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+          <p>"The eligibility checker saved me time. It told me exactly which scheme I qualified for and what documents I needed."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">A</div>
+            <div>
+              <strong>Arjun Patel</strong>
+              <span>SC/ST Housing Beneficiary, Gujarat</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="footer-logo"><i class="fas fa-home"></i> Housing Scheme Portal</div>
+            <p>A Government of India initiative to provide affordable housing to all citizens under the Housing for All Mission.</p>
+            <div class="social-links">
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+          </div>
+          <div class="footer-links">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="schemes.html">Schemes</a></li>
+              <li><a href="eligibility.html">Eligibility Check</a></li>
+              <li><a href="apply.html">Apply Now</a></li>
+              <li><a href="track.html">Track Application</a></li>
+            </ul>
+          </div>
+          <div class="footer-links">
+            <h4>Schemes</h4>
+            <ul>
+              <li><a href="schemes.html#pmay-urban">PMAY - Urban</a></li>
+              <li><a href="schemes.html#pmay-gramin">PMAY - Gramin</a></li>
+              <li><a href="schemes.html#sc-st">SC/ST Housing</a></li>
+              <li><a href="schemes.html#senior">Senior Citizen</a></li>
+            </ul>
+          </div>
+          <div class="footer-contact">
+            <h4>Helpdesk</h4>
+            <p><i class="fas fa-phone"></i> 1800-11-6163 (Toll Free)</p>
+            <p><i class="fas fa-envelope"></i> support@housingportal.gov.in</p>
+            <p><i class="fas fa-clock"></i> Mon–Sat, 9:00 AM – 6:00 PM</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>© 2025 Digital Housing Scheme Portal | Government of India. All Rights Reserved.</p>
+        <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Use</a> | <a href="#">Accessibility</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

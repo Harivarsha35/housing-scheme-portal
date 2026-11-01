@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Check Eligibility – Housing Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <link href="css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold text-primary" href="/"><i class="fas fa-home me-2"></i>Housing Portal</a>
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <ul class="navbar-nav align-items-center gap-1" id="citizenNavLinks">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/eligibility">Check Eligibility</a></li>
+        <li class="nav-item"><a class="nav-link" href="/schemes">Schemes</a></li>
+        <li class="nav-item"><a class="nav-link" href="/apply">Apply Now</a></li>
+        <li class="nav-item"><a class="nav-link" href="/track">Track Application</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <a class="btn btn-outline-warning text-dark fw-semibold rounded-pill px-3 py-1.5 shadow-sm" href="/admin" id="navOfficerPortal" style="border: 1.5px solid #ffc107;">
+          <i class="fas fa-user-shield me-1 text-warning"></i>Officer Portal
+        </a>
+        <div id="navAuthArea">
+          <a class="btn btn-primary rounded-pill px-3 py-1.5 fw-semibold shadow-sm" href="/login">
+            <i class="fas fa-user me-1"></i>Citizen Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero-section py-5">
+  <div class="container py-4 text-center text-white">
+    <h1 class="display-5 fw-black">Eligibility Checker</h1>
+    <p class="lead text-white-75">Find out which housing schemes you qualify for in under 2 minutes</p>
+  </div>
+</div>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow border-0 rounded-4">
+          <div class="card-body p-4 p-md-5">
+            <!-- Questions -->
+            <div id="questionArea">
+              <!-- Q1 -->
+              <div class="question-slide" data-step="1">
+                <h4 class="fw-bold mb-1">Where do you currently reside?</h4>
+                <p class="text-muted small mb-4">This helps us identify schemes available in your area</p>
+                <div class="row g-3">
+                  <div class="col-6"><button class="option-card w-100" data-key="area" data-val="urban"><i class="fas fa-city fs-2 d-block mb-2"></i>Urban / City</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="area" data-val="rural"><i class="fas fa-tree fs-2 d-block mb-2"></i>Rural / Village</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="area" data-val="semi-urban"><i class="fas fa-building fs-2 d-block mb-2"></i>Semi-Urban / Town</button></div>
+                </div>
+              </div>
+              <!-- Q2 -->
+              <div class="question-slide d-none" data-step="2">
+                <h4 class="fw-bold mb-1">What is your annual household income?</h4>
+                <p class="text-muted small mb-4">Include income of all earning members in the family</p>
+                <div class="row g-3">
+                  <div class="col-6"><button class="option-card w-100" data-key="income" data-val="below3"><i class="fas fa-rupee-sign fs-2 d-block mb-2"></i>Below ₹3 Lakh</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="income" data-val="3to6"><i class="fas fa-rupee-sign fs-2 d-block mb-2"></i>₹3 – ₹6 Lakh</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="income" data-val="6to12"><i class="fas fa-rupee-sign fs-2 d-block mb-2"></i>₹6 – ₹12 Lakh</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="income" data-val="above12"><i class="fas fa-rupee-sign fs-2 d-block mb-2"></i>Above ₹12 Lakh</button></div>
+                </div>
+              </div>
+              <!-- Q3 -->
+              <div class="question-slide d-none" data-step="3">
+                <h4 class="fw-bold mb-1">What is your social category?</h4>
+                <p class="text-muted small mb-4">Certain schemes are reserved for specific categories</p>
+                <div class="row g-3">
+                  <div class="col-6"><button class="option-card w-100" data-key="category" data-val="general"><i class="fas fa-user fs-2 d-block mb-2"></i>General</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="category" data-val="obc"><i class="fas fa-users fs-2 d-block mb-2"></i>OBC</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="category" data-val="sc"><i class="fas fa-shield-alt fs-2 d-block mb-2"></i>SC (Scheduled Caste)</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="category" data-val="st"><i class="fas fa-shield-alt fs-2 d-block mb-2"></i>ST (Scheduled Tribe)</button></div>
+                </div>
+              </div>
+              <!-- Q4 -->
+              <div class="question-slide d-none" data-step="4">
+                <h4 class="fw-bold mb-1">Do you currently own a permanent concrete/brick house?</h4>
+                <p class="text-muted small mb-4">Ownership of a permanent concrete or brick home anywhere in India</p>
+                <div class="row g-3">
+                  <div class="col-6"><button class="option-card w-100" data-key="house" data-val="no"><i class="fas fa-times-circle fs-2 d-block mb-2 text-success"></i>No – I do not own a permanent house</button></div>
+                  <div class="col-6"><button class="option-card w-100" data-key="house" data-val="yes"><i class="fas fa-check-circle fs-2 d-block mb-2 text-warning"></i>Yes – I own a permanent house</button></div>
+                </div>
+              </div>
+              <!-- Q5 -->
+              <div class="question-slide d-none" data-step="5">
+                <h4 class="fw-bold mb-1">What is your age group?</h4>
+                <p class="text-muted small mb-4">Some schemes have age-based eligibility</p>
+                <div class="row g-3">
+                  <div class="col-4"><button class="option-card w-100" data-key="age" data-val="below30"><i class="fas fa-user-graduate fs-2 d-block mb-2"></i>Below 30</button></div>
+                  <div class="col-4"><button class="option-card w-100" data-key="age" data-val="30to60"><i class="fas fa-user fs-2 d-block mb-2"></i>30 – 60</button></div>
+                  <div class="col-4"><button class="option-card w-100" data-key="age" data-val="above60"><i class="fas fa-user-clock fs-2 d-block mb-2"></i>Above 60</button></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Result -->
+            <div id="resultArea" class="d-none text-center">
+              <div id="resultIcon" class="result-icon mx-auto mb-3"></div>
+              <h3 class="fw-black" id="resultTitle"></h3>
+              <p class="text-muted mb-4" id="resultDesc"></p>
+              <div id="resultSchemes" class="text-start mb-4"></div>
+              <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/apply" class="btn btn-primary btn-lg"><i class="fas fa-file-alt me-2"></i>Apply Now</a>
+                <button class="btn btn-outline-secondary btn-lg" onclick="resetChecker()"><i class="fas fa-redo me-2"></i>Check Again</button>
+              </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="d-flex justify-content-between align-items-center mt-4" id="navBtns">
+              <button class="btn btn-outline-secondary" id="prevBtn" onclick="prevStep()" disabled><i class="fas fa-arrow-left me-2"></i>Previous</button>
+              <span class="text-muted small" id="stepCount">Click an option to continue</span>
+              <button class="btn btn-primary" id="nextBtn" onclick="nextStep()" disabled>Next <i class="fas fa-arrow-right ms-2"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/eligibility.js"></script>
+</body>
+</html>

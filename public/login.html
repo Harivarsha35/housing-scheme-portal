@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Citizen Portal – Housing Scheme</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <link href="css/main.css" rel="stylesheet"/>
+  <style>
+    html, body { min-height: 100vh; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 16px 40px;
+    }
+    .login-wrapper { width: 100%; max-width: 480px; }
+    .auth-header {
+      background: linear-gradient(135deg, #F3E5CE, #DFB982) !important;
+      padding: 20px 24px;
+      color: #3B2606 !important;
+    }
+    .auth-header a,
+    .auth-header i,
+    .auth-header h5,
+    .auth-header small {
+      color: #3B2606 !important;
+    }
+    .auth-tab-bar { display: flex; background: #f1f8f1; border-radius: 10px; padding: 4px; margin-bottom: 16px; }
+    .auth-tab {
+      flex: 1; border: none; background: transparent; border-radius: 8px;
+      padding: 10px; font-weight: 600; font-size: 0.92rem; color: #555;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .auth-tab.active { background: #fff; color: #1565C0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .input-group-text { background: #f8f9fa; border-right: none; }
+    .input-group .form-control { border-left: none; }
+    .input-group .form-control:focus { border-color: #2E7D32; box-shadow: none; }
+    .input-group:focus-within .input-group-text { border-color: #2E7D32; }
+    .btn-login  { background: #1565C0; border-color: #1565C0; color: #fff; }
+    .btn-login:hover  { background: #0D47A1; border-color: #0D47A1; color: #fff; }
+    .btn-reg    { background: #2E7D32; border-color: #2E7D32; color: #fff; }
+    .btn-reg:hover    { background: #1B5E20; border-color: #1B5E20; color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/" style="color:#2E7D32">
+      <i class="fas fa-home me-2"></i>Housing Portal
+    </a>
+  </div>
+</nav>
+
+<div class="login-wrapper">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+    <!-- Header -->
+    <div class="auth-header text-center">
+      <a href="/" class="text-decoration-none">
+        <i class="fas fa-home fs-1 mb-2 d-block"></i>
+        <h5 class="fw-black mb-1">Citizen Portal</h5>
+        <small class="opacity-85">Login or Register for Housing Assistance</small>
+      </a>
+    </div>
+
+    <div class="card-body px-4 pt-3 pb-2">
+
+      <!-- Tab Switcher -->
+      <div class="auth-tab-bar">
+        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">
+          <i class="fas fa-sign-in-alt me-2"></i>Login
+        </button>
+        <button class="auth-tab" id="tab-register" onclick="switchTab('register')">
+          <i class="fas fa-user-plus me-2"></i>Register
+        </button>
+      </div>
+
+      <!-- Alert -->
+      <div id="authAlert" class="d-none mb-3"></div>
+
+      <!-- ═══ LOGIN FORM ═══ -->
+      <form id="loginForm" class="form-panel active" onsubmit="handleLogin(event)" novalidate>
+
+        <div class="mb-2">
+          <label class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
+            <input type="email" class="form-control" id="loginEmail" required placeholder="your@email.com" autocomplete="email"/>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+            <input type="password" class="form-control" id="loginPassword" required placeholder="Enter your password" autocomplete="current-password"/>
+            <button type="button" class="btn btn-outline-secondary" onclick="togglePass('loginPassword')" tabindex="-1">
+              <i class="fas fa-eye" id="eyeLogin"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="text-end mb-3">
+          <a href="#" class="small text-decoration-none" style="color:#2E7D32">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-login w-100 py-2 fw-bold fs-6" id="loginBtn">
+          <span id="loginBtnText"><i class="fas fa-sign-in-alt me-2"></i>Login</span>
+          <span class="spinner-border spinner-border-sm d-none" id="loginSpinner"></span>
+        </button>
+
+        <p class="text-center text-muted small mt-2 mb-1">
+          Don't have an account?
+          <a href="#" onclick="switchTab('register')" class="fw-semibold text-decoration-none" style="color:#2E7D32">Register here</a>
+        </p>
+      </form>
+
+      <!-- ═══ REGISTER FORM ═══ -->
+      <form id="registerForm" class="form-panel" onsubmit="handleRegister(event)" novalidate>
+        <div class="row g-2">
+
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
+              <input type="text" class="form-control" id="regName" required placeholder="Enter your full name"/>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
+              <input type="email" class="form-control" id="regEmail" required placeholder="your@email.com"/>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+              <input type="password" class="form-control" id="regPassword" required placeholder="Min 6 characters"/>
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePass('regPassword')" tabindex="-1">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-12 mt-3">
+            <button type="submit" class="btn btn-reg w-100 py-2 fw-bold fs-6" id="regBtn">
+              <span id="regBtnText"><i class="fas fa-user-plus me-2"></i>Create Account</span>
+              <span class="spinner-border spinner-border-sm d-none" id="regSpinner"></span>
+            </button>
+          </div>
+
+          <div class="col-12 text-center">
+            <p class="text-muted small my-1">
+              Already have an account?
+              <a href="#" onclick="switchTab('login')" class="fw-semibold text-decoration-none" style="color:#2E7D32">Login here</a>
+            </p>
+          </div>
+
+        </div>
+      </form>
+
+    </div><!-- /card-body -->
+
+    <div class="card-footer bg-light text-center py-2 border-0">
+      <small class="text-muted">
+        <i class="fas fa-lock me-1 text-success"></i>Your data is 100% encrypted and secure
+        &nbsp;|&nbsp;
+        <a href="/" class="text-decoration-none" style="color:#2E7D32">Return to Home</a>
+      </small>
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /login-wrapper -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

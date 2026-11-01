@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>My Applications – Housing Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <link href="css/main.css" rel="stylesheet"/>
+  <style>
+    .app-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      transition: all 0.25s ease;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .app-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12) !important;
+    }
+  </style>
+</head>
+<body>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold text-primary" href="/"><i class="fas fa-home me-2"></i>Housing Portal</a>
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <ul class="navbar-nav align-items-center gap-1" id="citizenNavLinks">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/eligibility">Check Eligibility</a></li>
+        <li class="nav-item"><a class="nav-link" href="/schemes">Schemes</a></li>
+        <li class="nav-item"><a class="nav-link" href="/apply">Apply Now</a></li>
+        <li class="nav-item"><a class="nav-link" href="/track">Track Application</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <a class="btn btn-outline-warning text-dark fw-semibold rounded-pill px-3 py-1.5 shadow-sm" href="/admin" id="navOfficerPortal" style="border: 1.5px solid #ffc107;">
+          <i class="fas fa-user-shield me-1 text-warning"></i>Officer Portal
+        </a>
+        <div id="navAuthArea">
+          <a class="btn btn-primary rounded-pill px-3 py-1.5 fw-semibold shadow-sm" href="/login">
+            <i class="fas fa-user me-1"></i>Citizen Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero-section py-5">
+  <div class="container py-4 text-center text-white">
+    <h1 class="display-5 fw-black">My Housing Applications</h1>
+    <p class="lead text-white-75">View all your submitted scheme applications and Application IDs in one place</p>
+  </div>
+</div>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        
+        <!-- Not logged in alert -->
+        <div id="loginPrompt" class="d-none">
+          <div class="card border-0 shadow-lg rounded-4 p-5 text-center bg-white">
+            <div class="mb-3">
+              <i class="fas fa-user-lock text-warning" style="font-size:3.5rem"></i>
+            </div>
+            <h4 class="fw-bold">Login to View Your Applications</h4>
+            <p class="text-muted small mb-4">Please log in to your citizen account to view your Application IDs and tracking history.</p>
+            <div>
+              <a href="/login" class="btn btn-primary px-4 py-2 rounded-pill fw-bold">
+                <i class="fas fa-sign-in-alt me-2"></i>Go to Login
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Application Cards Container -->
+        <div id="applicationsContainer">
+          <div class="text-center py-5 text-white">
+            <div class="spinner-border text-light"></div>
+            <p class="mt-2 text-white-75">Loading your applications...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal for Citizen Construction Stage Photo Upload -->
+<div class="modal fade" id="citizenPhotoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0">
+      <div class="modal-header border-bottom">
+        <div>
+          <h5 class="modal-title fw-bold" id="cModalTitle"><i class="fas fa-camera text-success me-2"></i>Upload Construction Progress Photo</h5>
+          <small class="text-muted" id="cModalSubtitle">Submit geo-tagged site photo to verify your build and unlock next installment</small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="cUploadAppId"/>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Current Construction Milestone <span class="text-danger">*</span></label>
+          <select class="form-select" id="cStageSelect" required>
+            <option value="lintel" selected>Stage 2: Walls & Lintel Level (40% · ₹1,06,912)</option>
+            <option value="roof">Stage 3: Ceiling Slab & Roof (25% · ₹66,820)</option>
+            <option value="completed">Stage 4: Finishing & Complete (10% · ₹26,728)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Live Site Photo <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input type="file" class="form-control" id="cStagePhoto" accept="image/*" required onchange="handlePhotoSelect(this)"/>
+            <button type="button" class="btn btn-outline-danger d-none" id="btnClearPhoto" onclick="clearSelectedPhoto()" title="Delete / Remove selected photo">
+              <i class="fas fa-trash-alt me-1"></i>Delete
+            </button>
+          </div>
+          <small class="text-muted d-block mt-1" style="font-size:0.75rem"><i class="fas fa-info-circle me-1"></i>Please take a clear photo showing the ongoing physical house construction.</small>
+
+          <!-- Photo Preview with Delete Option -->
+          <div id="cPhotoPreviewBox" class="d-none mt-2 p-2 border rounded-3 bg-light text-center">
+            <div class="position-relative d-inline-block">
+              <img id="cPhotoPreviewImg" src="" alt="Selected Photo" class="img-fluid rounded border shadow-sm" style="max-height: 140px; object-fit: cover;"/>
+              <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-0" style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center" onclick="clearSelectedPhoto()" title="Delete photo">
+                <i class="fas fa-trash-alt" style="font-size:0.7rem"></i>
+              </button>
+            </div>
+            <div class="mt-1 d-flex justify-content-center align-items-center gap-2">
+              <span id="cPhotoFileName" class="small text-muted text-truncate" style="max-width: 220px; font-size:0.75rem"></span>
+              <button type="button" class="btn btn-link text-danger p-0 small text-decoration-none fw-semibold" style="font-size:0.78rem" onclick="clearSelectedPhoto()">
+                <i class="fas fa-trash-alt me-1"></i>Delete Photo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Notes / Work Details</label>
+          <textarea class="form-control" id="cStageRemarks" rows="2" placeholder="e.g. Brick walls completed up to window height, ready for inspection."></textarea>
+        </div>
+
+        <div class="p-2.5 rounded-3 bg-light border small text-muted">
+          <i class="fas fa-satellite-dish me-1 text-primary"></i><strong>Geo-Tagging:</strong> Your device's current GPS location coordinates will be tagged with this photo for verification.
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success btn-sm fw-bold px-3" id="btnSubmitStagePhoto" onclick="submitCitizenStagePhoto()">
+          <i class="fas fa-cloud-upload-alt me-1"></i>Submit for Officer Verification
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/main.js"></script>
+<script>
+  let citizenPhotoModalInstance = null;
+
+  function handlePhotoSelect(input) {
+    const clearBtn = document.getElementById('btnClearPhoto');
+    const previewBox = document.getElementById('cPhotoPreviewBox');
+    const previewImg = document.getElementById('cPhotoPreviewImg');
+    const fileNameSpan = document.getElementById('cPhotoFileName');
+
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (fileNameSpan) fileNameSpan.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if (previewImg) previewImg.src = e.target.result;
+        if (previewBox) previewBox.classList.remove('d-none');
+        if (clearBtn) clearBtn.classList.remove('d-none');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      clearSelectedPhoto();
+    }
+  }
+
+  function clearSelectedPhoto() {
+    const photoInput = document.getElementById('cStagePhoto');
+    const clearBtn = document.getElementById('btnClearPhoto');
+    const previewBox = document.getElementById('cPhotoPreviewBox');
+    const previewImg = document.getElementById('cPhotoPreviewImg');
+    const fileNameSpan = document.getElementById('cPhotoFileName');
+
+    if (photoInput) photoInput.value = '';
+    if (previewImg) previewImg.src = '';
+    if (fileNameSpan) fileNameSpan.textContent = '';
+    if (previewBox) previewBox.classList.add('d-none');
+    if (clearBtn) clearBtn.classList.add('d-none');
+  }
+
+  function openCitizenUploadModal(id, appId) {
+    clearSelectedPhoto();
+    document.getElementById('cUploadAppId').value = id;
+    document.getElementById('cModalTitle').innerHTML = `<i class="fas fa-camera text-success me-2"></i>Upload Construction Photo · ${appId}`;
+    
+    // Dynamically populate stages dropdown with exact amounts from the application
+    const app = (window._citizenApps || []).find(a => a._id === id || a.applicationId === appId);
+    const stageSelect = document.getElementById('cStageSelect');
+    if (stageSelect && app) {
+      const totalSubsidy = (app.constructionStages && app.constructionStages.length)
+        ? app.constructionStages.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)
+        : (app.subsidyAmount || 267280);
+
+      const defaultStages = [
+        { stageKey: 'foundation', stageName: 'Stage 1: Foundation Level', pct: '25%', amount: Math.round(totalSubsidy * 0.25) },
+        { stageKey: 'lintel', stageName: 'Stage 2: Walls & Lintel Level', pct: '40%', amount: Math.round(totalSubsidy * 0.40) },
+        { stageKey: 'roof', stageName: 'Stage 3: Ceiling Slab & Roof', pct: '25%', amount: Math.round(totalSubsidy * 0.25) },
+        { stageKey: 'completed', stageName: 'Stage 4: Finishing & Complete', pct: '10%', amount: Math.round(totalSubsidy * 0.10) }
+      ];
+
+      const stagesToRender = (app.constructionStages && app.constructionStages.length === 4)
+        ? app.constructionStages.map((s, idx) => ({
+            stageKey: s.stageKey || defaultStages[idx].stageKey,
+            stageName: s.stageName || defaultStages[idx].stageName,
+            pct: s.installmentPct ? `${s.installmentPct}%` : defaultStages[idx].pct,
+            amount: Number(s.amount) || defaultStages[idx].amount,
+            status: s.status
+          }))
+        : defaultStages;
+
+      // Filter out stages that are already completed / disbursed
+      const availableStages = stagesToRender.filter(s => s.status !== 'disbursed' && s.status !== 'completed');
+
+      const submitBtn = document.getElementById('btnSubmitStagePhoto');
+
+      if (availableStages.length === 0) {
+        stageSelect.innerHTML = `<option value="" disabled selected>All construction stages are completed & disbursed</option>`;
+        if (submitBtn) submitBtn.disabled = true;
+      } else {
+        if (submitBtn) submitBtn.disabled = false;
+
+        // Find which stage is currently active/pending verification, or default to the first available stage
+        const activeStage = availableStages.find(s => s.status === 'pending_verification') || availableStages[0];
+
+        stageSelect.innerHTML = availableStages.map(s => {
+          const isSelected = activeStage && activeStage.stageKey === s.stageKey;
+          return `<option value="${s.stageKey}" ${isSelected ? 'selected' : ''}>${s.stageName} (${s.pct} · ₹${s.amount.toLocaleString('en-IN')})</option>`;
+        }).join('');
+      }
+    }
+
+    if (!citizenPhotoModalInstance) {
+      citizenPhotoModalInstance = new bootstrap.Modal(document.getElementById('citizenPhotoModal'));
+    }
+    citizenPhotoModalInstance.show();
+  }
+
+  async function submitCitizenStagePhoto() {
+    const id = document.getElementById('cUploadAppId').value;
+    const stageKey = document.getElementById('cStageSelect').value;
+    const photoInput = document.getElementById('cStagePhoto');
+    const remarks = document.getElementById('cStageRemarks').value;
+
+    if (!photoInput.files || !photoInput.files[0]) {
+      alert('Please select or capture a construction site photo.');
+      return;
+    }
+
+    const btn = document.getElementById('btnSubmitStagePhoto');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading & Geo-tagging...';
+
+    // Attempt to grab browser GPS location
+    let latitude = '11.0168° N';
+    let longitude = '76.9558° E';
+
+    if (navigator.geolocation) {
+      try {
+        const pos = await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { timeout: 3000 });
+        });
+        if (pos) {
+          latitude = `${pos.coords.latitude.toFixed(4)}° ${pos.coords.latitude >= 0 ? 'N' : 'S'}`;
+          longitude = `${pos.coords.longitude.toFixed(4)}° ${pos.coords.longitude >= 0 ? 'E' : 'W'}`;
+        }
+      } catch (e) {}
+    }
+
+    const formData = new FormData();
+    formData.append('photo', photoInput.files[0]);
+    formData.append('stageKey', stageKey);
+    formData.append('latitude', latitude);
+    formData.append('longitude', longitude);
+    formData.append('remarks', remarks || 'Citizen uploaded progress photo for verification.');
+
+    try {
+      const res = await fetch(`/api/applications/${id}/upload-stage-photo`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('✅ Site photo uploaded successfully! The verification officer has been notified to verify your progress and release the next installment.');
+        citizenPhotoModalInstance.hide();
+        loadUserApplications();
+      } else {
+        alert(data.message || 'Upload failed.');
+      }
+    } catch (e) {
+      alert('Error uploading photo. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-cloud-upload-alt me-1"></i>Submit for Officer Verification';
+    }
+  }
+
+  async function loadUserApplications() {
+    const container = document.getElementById('applicationsContainer');
+    const loginPrompt = document.getElementById('loginPrompt');
+
+    try {
+      const res = await fetch('/api/applications/my-applications');
+      if (res.status === 401) {
+        container.classList.add('d-none');
+        loginPrompt.classList.remove('d-none');
+        return;
+      }
+
+      const data = await res.json();
+      const apps = data.applications || [];
+      window._citizenApps = apps;
+
+      if (apps.length === 0) {
+        container.innerHTML = `
+          <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <i class="fas fa-inbox text-muted mb-3" style="font-size:3.5rem"></i>
+            <h4 class="fw-bold">No Applications Found</h4>
+            <p class="text-muted small mb-4">You have not submitted any housing scheme applications yet.</p>
+            <div>
+              <a href="/eligibility" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">
+                <i class="fas fa-clipboard-check me-2"></i>Check Eligibility & Apply
+              </a>
+            </div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-4 text-white">
+          <h4 class="fw-bold mb-0">Submitted Applications (${apps.length})</h4>
+          <a href="/apply" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+            <i class="fas fa-plus me-1"></i>New Application
+          </a>
+        </div>
+        <div class="row g-4">
+          ${apps.map(app => {
+            const totalSubsidy = (app.constructionStages && app.constructionStages.length)
+              ? app.constructionStages.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)
+              : (app.subsidyAmount || 250000);
+            const s1 = (app.constructionStages && app.constructionStages[0]) || { amount: Math.round(totalSubsidy * 0.25) };
+            const s2 = (app.constructionStages && app.constructionStages[1]) || { amount: Math.round(totalSubsidy * 0.40) };
+            const s3 = (app.constructionStages && app.constructionStages[2]) || { amount: Math.round(totalSubsidy * 0.25) };
+            const s4 = (app.constructionStages && app.constructionStages[3]) || { amount: Math.round(totalSubsidy * 0.10) };
+            return `
+            <div class="col-12">
+              <div class="card app-card shadow-sm p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom pb-3 mb-3">
+                  <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-1.5 rounded-pill fs-6">
+                        <i class="fas fa-hashtag me-1"></i>${app.applicationId}
+                      </span>
+                      ${statusBadge(app.status)}
+                    </div>
+                    <h5 class="fw-bold text-dark mb-0 mt-2">${app.schemeName || 'Housing Scheme'}</h5>
+                  </div>
+                  <div>
+                    <a href="/track?id=${app.applicationId}" class="btn btn-warning fw-bold px-4 rounded-pill shadow-sm">
+                      <i class="fas fa-route me-1"></i>Live Track Status
+                    </a>
+                  </div>
+                </div>
+
+                <div class="row g-3 small text-muted">
+                  <div class="col-sm-6 col-md-3">
+                    <span class="d-block fw-semibold text-dark">Applicant Name</span>
+                    <span>${app.applicantName}</span>
+                  </div>
+                  <div class="col-sm-6 col-md-3">
+                    <span class="d-block fw-semibold text-dark">Submitted Date</span>
+                    <span>${fmtDate(app.submittedAt)}</span>
+                  </div>
+                  <div class="col-sm-6 col-md-3">
+                    <span class="d-block fw-semibold text-dark">Subsidy Amount</span>
+                    <span class="text-success fw-bold">₹${totalSubsidy.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div class="col-sm-6 col-md-3">
+                    <span class="d-block fw-semibold text-dark">Location</span>
+                    <span>${app.address?.city || '—'}, ${app.address?.state || '—'}</span>
+                  </div>
+                </div>
+
+                ${(app.status === 'approved' || app.status === 'disbursed') ? `
+                  <!-- Phased Construction & Subsidy Installment Tracker -->
+                  <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+                      <div>
+                        <h6 class="fw-bold mb-0 text-success"><i class="fas fa-hard-hat me-2"></i>Physical House Construction & Subsidy Installments</h6>
+                        <small class="text-muted">Funds are released in 4 installments as physical construction is verified on site.</small>
+                      </div>
+                      <div>
+                        <button class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-semibold" onclick="openCitizenUploadModal('${app._id}','${app.applicationId}')">
+                          <i class="fas fa-camera me-1"></i>Upload Construction Photo
+                        </button>
+                      </div>
+                    </div>
+
+                    ${app.constructionOverdue ? `
+                      <div class="alert alert-warning py-2 px-3 small rounded-3 mb-3 border-warning">
+                        <i class="fas fa-exclamation-triangle me-1 text-danger"></i><strong>Progress Reminder:</strong> Initial subsidy has been credited. Please upload your wall/lintel construction photo to avoid inquiry and unlock your next installment.
+                      </div>
+                    ` : ''}
+
+                    <div class="row g-2">
+                      ${[
+                        { stg: s1, num: 1, name: 'Foundation Level', pct: '25%' },
+                        { stg: s2, num: 2, name: 'Walls & Lintel', pct: '40%' },
+                        { stg: s3, num: 3, name: 'Ceiling & Roof', pct: '25%' },
+                        { stg: s4, num: 4, name: 'Completion', pct: '10%' }
+                      ].map(item => {
+                        const isDisbursed = item.stg.status === 'disbursed';
+                        const isPending = item.stg.status === 'pending_verification';
+                        const badgeClass = isDisbursed ? 'bg-success' : isPending ? 'bg-warning text-dark' : 'bg-secondary';
+                        const amtColor = isDisbursed ? 'text-success' : isPending ? 'text-primary' : 'text-dark';
+                        const statusHTML = isDisbursed 
+                          ? `<span class="text-success d-block fw-semibold"><i class="fas fa-check-circle me-1"></i>Verified & Disbursed</span>`
+                          : isPending 
+                          ? `<span class="text-primary d-block fw-semibold"><i class="fas fa-camera me-1"></i>${item.stg.photo ? 'Photo Uploaded · In Review' : 'Geo-Tag Photo Required'}</span>`
+                          : `<span class="text-muted d-block"><i class="fas fa-lock me-1"></i>Unlocks Next</span>`;
+                        const amt = Number(item.stg.amount || Math.round(totalSubsidy * (parseInt(item.pct) / 100)));
+
+                        return `
+                          <div class="col-6 col-md-3">
+                            <div class="p-2.5 rounded-3 border bg-light text-center h-100 ${!isDisbursed && !isPending ? 'opacity-75' : ''}">
+                              <span class="badge ${badgeClass} mb-1">Stage ${item.num} · ${item.pct}</span>
+                              <div class="fw-bold small text-dark">${item.name}</div>
+                              <div class="fw-bold ${amtColor} my-1 fs-6">₹${amt.toLocaleString('en-IN')}</div>
+                              ${statusHTML}
+                              ${item.stg.dueDate ? `
+                                <div class="mt-1 badge ${isDisbursed ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark border border-warning'}" style="font-size:0.67rem">
+                                  <i class="fas fa-calendar-alt me-1"></i>${isDisbursed ? 'Completed' : 'Limit'}: ${new Date(item.stg.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                </div>
+                              ` : ''}
+                            </div>
+                          </div>`;
+                      }).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    } catch (e) {
+      container.innerHTML = `
+        <div class="alert alert-danger text-center">
+          Unable to fetch applications. Please check your connection.
+        </div>`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadUserApplications);
+</script>
+</body>
+</html>
