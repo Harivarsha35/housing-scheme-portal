@@ -10,13 +10,24 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Connect to MongoDB ────────────────────────────────────────────
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ MongoDB connected'))
-.catch(err => {
-  console.warn('⚠️  MongoDB not available – running in demo mode (in-memory data)');
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000
+  })
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => {
+    console.warn('⚠️  MongoDB not available – running in demo mode (in-memory data):', err.message);
+  });
+} else {
+  console.log('ℹ️  No MONGO_URI provided – running in demo mode (in-memory data)');
+}
+
+// ── Global Error Guard (Prevents 502 crashes on cloud hosts like Render) ───
+process.on('unhandledRejection', (reason) => {
+  console.warn('⚠️  Unhandled Rejection handled gracefully:', reason?.message || reason);
+});
+process.on('uncaughtException', (err) => {
+  console.warn('⚠️  Uncaught Exception handled gracefully:', err?.message || err);
 });
 
 // ── Middleware ────────────────────────────────────────────────────
@@ -32,13 +43,20 @@ const sessionConfig = {
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 };
+
 if (process.env.MONGO_URI && process.env.MONGO_URI.startsWith('mongodb')) {
   try {
-    sessionConfig.store = MongoStore.create({
+    const store = MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
       collectionName: 'sessions',
-      ttl: 24 * 60 * 60
+      ttl: 24 * 60 * 60,
+      mongoOptions: { serverSelectionTimeoutMS: 5000 }
     });
+    // Prevent unhandled error event from crashing the server if Mongo is unreachable
+    store.on('error', (err) => {
+      console.warn('⚠️  MongoStore error (falling back to memory):', err.message);
+    });
+    sessionConfig.store = store;
   } catch (err) {
     console.warn('⚠️  Could not attach MongoStore session store, using MemoryStore fallback:', err.message);
   }
@@ -66,16 +84,19 @@ pages.forEach(page => {
   });
 });
 
+// Health check for Render load balancer
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
 // Fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // ── Start ─────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🏠 Digital Housing Scheme Portal`);
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`📋 Admin panel:      http://localhost:${PORT}/admin`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📋 Admin panel: http://localhost:${PORT}/admin`);
   console.log(`───────────────────────────────────────────────`);
 
   // Automatically open browser in local development
